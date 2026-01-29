@@ -1,6 +1,7 @@
 ﻿using HotelPlatform.Application.Common.Interfaces;
 using HotelPlatform.Application.Common.Settings;
 using HotelPlatform.Infrastructure.Data;
+using HotelPlatform.Infrastructure.Identity;
 using HotelPlatform.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +34,8 @@ public static class DependencyInjection
                 npgOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
             });
         });
-        
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
         services.AddScoped(typeof(IRepository<>),typeof(Repository<>));
         

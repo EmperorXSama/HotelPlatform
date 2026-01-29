@@ -1,0 +1,16 @@
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\HotelPlatform.Application.deps.json
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\HotelPlatform.Application.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\HotelPlatform.Application.pdb
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\HotelPlatform.Domain.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\HotelPlatform.Domain.pdb
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.csproj.AssemblyReference.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.AssemblyInfoInputs.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.AssemblyInfo.cs
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.csproj.CoreCompileInputs.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.sourcelink.json
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPla.E313BC3E.Up2Date
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\refint\HotelPlatform.Application.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.pdb
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\ref\HotelPlatform.Application.dll

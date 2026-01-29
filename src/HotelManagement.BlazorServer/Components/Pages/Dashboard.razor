@@ -1,0 +1,62 @@
+﻿@page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@attribute [Authorize]
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <div class="card">
+            <div class="card-header">
+                Welcome, @authContext.User.Identity?.Name!
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Your Profile</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>Username:</strong> @authContext.User.FindFirst("preferred_username")?.Value
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Email:</strong> @authContext.User.FindFirst(ClaimTypes.Email)?.Value
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Roles:</strong> 
+                        @string.Join(", ", authContext.User.FindAll(ClaimTypes.Role).Select(c => c.Value))
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h5>Role-Based Content</h5>
+            
+            <AuthorizeView Policy="SuperAdmin">
+                <Authorized>
+                    <div class="alert alert-success">
+                        ✅ You have Super Admin access
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+
+            <AuthorizeView Policy="HotelOwner">
+                <Authorized>
+                    <div class="alert alert-info">
+                        🏨 You can manage hotels
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+
+            <AuthorizeView Policy="User">
+                <Authorized>
+                    <div class="alert alert-secondary">
+                        👤 You have basic user access
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </Authorized>
+</AuthorizeView>

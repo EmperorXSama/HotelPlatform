@@ -1,0 +1,13 @@
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\bin\Debug\net10.0\HotelPlatform.Domain.deps.json
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\bin\Debug\net10.0\HotelPlatform.Domain.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\bin\Debug\net10.0\HotelPlatform.Domain.pdb
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.csproj.AssemblyReference.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.AssemblyInfoInputs.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.AssemblyInfo.cs
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.csproj.CoreCompileInputs.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.sourcelink.json
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\refint\HotelPlatform.Domain.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\HotelPlatform.Domain.pdb
+C:\Personal\work\HotelPlatform\src\HotelPlatform.Domain\obj\Debug\net10.0\ref\HotelPlatform.Domain.dll

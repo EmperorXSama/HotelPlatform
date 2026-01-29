@@ -9,11 +9,11 @@ namespace HotelPlatform.Infrastructure.Data.Interceptors;
 
 public class AuditableEntityInterceptor : SaveChangesInterceptor
 {
-    private readonly IUser _user;
+    private readonly ICurrentUser _user;
     private readonly TimeProvider _dateTime;
 
     public AuditableEntityInterceptor(
-        IUser user,
+        ICurrentUser user,
         TimeProvider dateTime)
     {
         _user = user;

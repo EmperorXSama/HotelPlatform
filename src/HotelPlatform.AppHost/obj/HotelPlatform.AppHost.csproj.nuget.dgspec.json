@@ -73,6 +73,10 @@
             "Aspire.Hosting.PostgreSQL": {
               "target": "Package",
               "version": "[13.1.0, )"
+            },
+            "Aspire.Hosting.Redis": {
+              "target": "Package",
+              "version": "[13.1.0, )"
             }
           },
           "imports": [

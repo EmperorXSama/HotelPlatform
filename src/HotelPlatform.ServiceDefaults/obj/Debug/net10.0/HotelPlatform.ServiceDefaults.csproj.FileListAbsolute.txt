@@ -1,0 +1,13 @@
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\bin\Debug\net10.0\HotelPlatform.ServiceDefaults.deps.json
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\bin\Debug\net10.0\HotelPlatform.ServiceDefaults.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\bin\Debug\net10.0\HotelPlatform.ServiceDefaults.pdb
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.csproj.AssemblyReference.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.GeneratedMSBuildEditorConfig.editorconfig
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.AssemblyInfoInputs.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.AssemblyInfo.cs
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.csproj.CoreCompileInputs.cache
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.sourcelink.json
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\refint\HotelPlatform.ServiceDefaults.dll
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\HotelPlatform.ServiceDefaults.pdb
+C:\Personal\work\HotelPlatform\src\HotelPlatform.ServiceDefaults\obj\Debug\net10.0\ref\HotelPlatform.ServiceDefaults.dll

@@ -1,0 +1,59 @@
+﻿@using HotelManagement.BlazorServer.Services
+@using HotelPlatform.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ITokenService TokenService
+@inject NavigationManager Navigation
+@inject ILogger<SessionStatus> Logger
+
+<AuthorizeView>
+    <Authorized>
+        @if (_sessionExpired)
+        {
+            <div class="alert alert-warning d-flex align-items-center mb-0 py-1 px-2">
+                <span class="me-2">Session expired</span>
+                <a href="/login" class="btn btn-sm btn-warning">Login Again</a>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private bool _sessionExpired;
+    private Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        // Check session status periodically (every 30 seconds)
+        _timer = new Timer(async _ => await CheckSessionAsync(), null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+    }
+
+    private async Task CheckSessionAsync()
+    {
+        try
+        {
+            var isExpired = await TokenService.IsTokenExpiredAsync();
+            
+            if (isExpired)
+            {
+                // Try to refresh
+                var result = await TokenService.RefreshTokenIfNeededAsync();
+                _sessionExpired = !result.Success;
+            }
+            else
+            {
+                _sessionExpired = false;
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error checking session status");
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}
