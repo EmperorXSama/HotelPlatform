@@ -1,0 +1,20 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>01ea3abe-8d22-486b-ae7c-3a391e0459b7</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotelPlatform.Api\HotelPlatform.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25616.3" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.1.0" />
+  </ItemGroup>
+
+</Project>

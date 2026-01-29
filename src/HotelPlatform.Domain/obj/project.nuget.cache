@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "2JhNGXqahrw=",
+  "success": true,
+  "projectFilePath": "C:\\Personal\\work\\HotelPlatform\\src\\HotelPlatform.Domain\\HotelPlatform.Domain.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\khali\\.nuget\\packages\\erroror\\2.0.1\\erroror.2.0.1.nupkg.sha512",
+    "C:\\Users\\khali\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
