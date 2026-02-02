@@ -23,7 +23,6 @@ public class AuthenticationHeaderMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Skip for endpoints that don't require authentication
         var endpoint = context.GetEndpoint();
         var allowAnonymous = endpoint?.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>();
         
@@ -32,8 +31,7 @@ public class AuthenticationHeaderMiddleware
             await _next(context);
             return;
         }
-
-        // Check for Authorization header on protected endpoints
+        
         var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
         
         if (string.IsNullOrEmpty(authHeader))

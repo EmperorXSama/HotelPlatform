@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace HotelPlatform.Infrastructure.Data.Interceptors;
 
 
-public class AuditableEntityInterceptor : SaveChangesInterceptor
+public class AuditableEntityInterceptor<TId> : SaveChangesInterceptor where TId : IStronglyTypedId<Guid>
 {
     private readonly ICurrentUser _user;
     private readonly TimeProvider _dateTime;
@@ -38,7 +38,7 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
     {
         if (context == null) return;
 
-        foreach (var entry in context.ChangeTracker.Entries<BaseAuditableEntity>())
+        foreach (var entry in context.ChangeTracker.Entries<BaseAuditableEntity<TId>>())
         {
             if (entry.State is EntityState.Added or EntityState.Modified || entry.HasChangedOwnedEntities())
             {
@@ -46,7 +46,7 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
                 if (entry.State == EntityState.Added)
                 {
                     entry.Entity.CreatedBy = _user.Id;
-                    entry.Entity.Created = utcNow;
+                    entry.Entity.CreatedAt = utcNow;
                 } 
                 entry.Entity.LastModifiedBy = _user.Id;
                 entry.Entity.LastModified = utcNow;

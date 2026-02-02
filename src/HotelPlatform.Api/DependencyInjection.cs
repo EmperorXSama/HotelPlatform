@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Azure.Identity;
 using HotelPlatform.Api.Authentication;
 using HotelPlatform.Application;
 using HotelPlatform.Application.Common.Settings;
@@ -20,12 +21,27 @@ public static class DependencyInjection
             .AddAuthenticationServices(configuration)
             .AddAuthorizationServices();
 
+    // Api/DependencyInjection.cs
     private static IServiceCollection AddSettings(
         this IServiceCollection services,
         IConfiguration configuration)
     {
         services.AddOptions<DatabaseSettings>()
             .Bind(configuration.GetSection(DatabaseSettings.SectionName))
+            .PostConfigure<IConfiguration>((settings, config) =>
+            {
+                // Only needed for Database because Aspire injects it as ConnectionStrings:hoteldb
+                if (string.IsNullOrEmpty(settings.ConnectionString))
+                {
+                    settings.ConnectionString = config.GetConnectionString("hoteldb") ?? string.Empty;
+                }
+            })
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // Storage - simple bind, no fallback needed
+        services.AddOptions<StorageSettings>()
+            .Bind(configuration.GetSection(StorageSettings.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -63,7 +79,7 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true,
                     ClockSkew = TimeSpan.FromSeconds(30),
                     NameClaimType = "preferred_username",
-                    RoleClaimType = ClaimTypes.Role 
+                    RoleClaimType = ClaimTypes.Role
                 };
 
                 // Use custom events handler
@@ -83,4 +99,6 @@ public static class DependencyInjection
 
         return services;
     }
+    
+
 }

@@ -1,26 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HotelPlatform.Domain.Abstractions;
-
-public class BaseEntity
+public abstract class BaseEntity<TId> : BaseEntity, IEquatable<BaseEntity<TId>>
+    where TId : notnull
 {
-    public Guid Id { get; set; }
-    private readonly List<IBaseEvent> _domainEvents = new();
-    [NotMapped]
-    public IReadOnlyCollection<IBaseEvent> DomainEvents => _domainEvents.AsReadOnly();
-    
-    public void AddDomainEvent(IBaseEvent domainEvent) => _domainEvents.Add(domainEvent);
-    public void RemoveDomainEvent(IBaseEvent domainEvent) => _domainEvents.Remove(domainEvent);
-    public void ClearDomainEvents() => _domainEvents.Clear();
+    public TId Id { get; protected set; }
 
-    protected BaseEntity(Guid? id)
+    protected BaseEntity(TId id)
     {
-        Id = id ?? Guid.NewGuid();
+        Id = id;
     }
-    
-    
-    protected BaseEntity(){}
-    public bool Equals(BaseEntity? other)
+
+    protected BaseEntity() 
+    { 
+        Id = default!;
+    }
+
+    public bool Equals(BaseEntity<TId>? other)
     {
         if (other is null) return false;
         if (other.GetType() != GetType()) return false;
@@ -28,22 +24,22 @@ public class BaseEntity
         return Id.Equals(other.Id);
     }
 
-    public override bool Equals(object? obj)
-    {
-        return obj is BaseEntity other && Equals(other);
-    }
-    public override int GetHashCode()
-    {
-        return Id.GetHashCode();
-    }
+    public override bool Equals(object? obj) => obj is BaseEntity<TId> other && Equals(other);
     
-    public static bool operator ==(BaseEntity? left, BaseEntity? right)
-    {
-        return Equals(left, right);
-    }
-    public static bool operator !=(BaseEntity? left, BaseEntity? right)
-    {
-        return !Equals(left, right);
-    }
+    public override int GetHashCode() => Id.GetHashCode();
 
+    public static bool operator ==(BaseEntity<TId>? left, BaseEntity<TId>? right) => Equals(left, right);
+    
+    public static bool operator !=(BaseEntity<TId>? left, BaseEntity<TId>? right) => !Equals(left, right);
+}
+public class BaseEntity
+{
+    private readonly List<BaseDomainEvent> _domainEvents = new();
+    [NotMapped]
+    public IReadOnlyCollection<BaseDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    
+    public void AddDomainEvent(BaseDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
+    public void RemoveDomainEvent(BaseDomainEvent domainEvent) => _domainEvents.Remove(domainEvent);
+    public void ClearDomainEvents() => _domainEvents.Clear();
+    
 }

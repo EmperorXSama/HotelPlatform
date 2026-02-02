@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HotelManagement.BlazorServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4fc5ee3224c8e9e059d3b056548be0cb0f859a18")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b7d847d1f86ad160c4928cc84056803b3b83752e")]
 [assembly: System.Reflection.AssemblyProductAttribute("HotelManagement.BlazorServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HotelManagement.BlazorServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -13,7 +13,8 @@
           "HotelPlatform.Domain": "1.0.0",
           "MediatR": "14.0.0",
           "Microsoft.Extensions.Configuration": "10.0.2",
-          "Microsoft.Extensions.Configuration.Binder": "10.0.2"
+          "Microsoft.Extensions.Configuration.Binder": "10.0.2",
+          "Microsoft.AspNetCore.Http.Features": "10.0.0.0"
         },
         "runtime": {
           "HotelPlatform.Application.dll": {}
@@ -184,6 +185,38 @@
             "fileVersion": "1.0.0.0"
           }
         }
+      },
+      "Microsoft.AspNetCore.Http.Features/10.0.0.0": {
+        "runtime": {
+          "Microsoft.AspNetCore.Http.Features.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
+      },
+      "Microsoft.Net.Http.Headers/10.0.0.0": {
+        "runtime": {
+          "Microsoft.Net.Http.Headers.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Connections.Abstractions/10.0.0.0": {
+        "runtime": {
+          "Microsoft.AspNetCore.Connections.Abstractions.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
+      },
+      "Microsoft.Extensions.Features/10.0.0.0": {
+        "runtime": {
+          "Microsoft.Extensions.Features.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
       }
     }
   },
@@ -300,6 +333,26 @@
     },
     "HotelPlatform.Domain/1.0.0": {
       "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.AspNetCore.Http.Features/10.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Net.Http.Headers/10.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.AspNetCore.Connections.Abstractions/10.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Extensions.Features/10.0.0.0": {
+      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }

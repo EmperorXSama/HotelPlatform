@@ -1,0 +1,17 @@
+{
+  "name": "hotel-theme",
+  "version": "1.0.0",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "build": "tailwindcss -i ./input.css -o ./styles.css --minify",
+    "watch": "tailwindcss -i ./input.css -o ./styles.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  }
+}

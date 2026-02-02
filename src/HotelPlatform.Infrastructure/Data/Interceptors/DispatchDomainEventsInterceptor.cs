@@ -31,22 +31,25 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         return await base.SavedChangesAsync(eventData, result, cancellationToken);
     }
 
-    public async Task DispatchDomainEvents(DbContext? context)
+    private async Task DispatchDomainEvents(DbContext? context)
     {
         if (context == null) return;
-
+        
         var entities = context.ChangeTracker
             .Entries<BaseEntity>()
             .Where(e => e.Entity.DomainEvents.Any())
-            .Select(e => e.Entity);
+            .Select(e => e.Entity)
+            .ToList();
 
         var domainEvents = entities
             .SelectMany(e => e.DomainEvents)
             .ToList();
 
-        entities.ToList().ForEach(e => e.ClearDomainEvents());
+        entities.ForEach(e => e.ClearDomainEvents());
 
         foreach (var domainEvent in domainEvents)
+        {
             await _mediator.Publish(domainEvent);
+        }
     }
 }

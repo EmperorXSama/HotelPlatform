@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace HotelPlatform.Infrastructure.Repositories;
 
 
-public class Repository<T> : IRepository<T> where T : BaseEntity
+public class Repository<T,TId> : IRepository<T,TId> where T : BaseEntity<TId> 
+    where TId :  IStronglyTypedId<Guid>
 {
     protected readonly ApplicationDbContext DbContext;
 
@@ -22,14 +23,16 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         return Result.Success;
     }
 
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+ public async Task<bool> ExistsAsync(TId id, CancellationToken cancellationToken = default)
     {
-        return await DbContext.Set<T>().AnyAsync(entity => entity.Id == id, cancellationToken: cancellationToken);
+        var guidValue = id.Value; 
+        return await DbContext.Set<T>()
+            .AnyAsync(entity => entity.Id.Value == guidValue, cancellationToken);
     }
 
-    public async Task<ErrorOr<T?>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ErrorOr<T?>> GetByIdAsync(TId id, CancellationToken cancellationToken = default)
     {
-        var entity = await DbContext.Set<T>().FirstOrDefaultAsync(entity=> entity.Id == id, cancellationToken);
+        var entity = await DbContext.Set<T>().FirstOrDefaultAsync(entity=> entity.Id.Value == id.Value, cancellationToken);
         return entity;
     }
 
@@ -44,7 +47,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         return Result.Success;
     }
 
-    public async  Task<ErrorOr<Success>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async  Task<ErrorOr<Success>> DeleteAsync(TId id, CancellationToken cancellationToken = default)
     { 
         var entity = await GetByIdAsync(id, cancellationToken);
         if (entity.IsError) return entity.Errors;

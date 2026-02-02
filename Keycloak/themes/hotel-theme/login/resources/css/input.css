@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* Custom theme configuration for Tailwind v4 */
+@theme {
+    --color-hotel-primary: #1E3A8A;
+    --color-hotel-secondary: #0EA5E9;
+    --color-hotel-accent: #F59E0B;
+}
+
+/* Custom component styles */
+@layer components {
+    .btn-primary {
+        @apply w-full bg-hotel-primary text-white py-3 px-4 rounded-lg
+        hover:bg-hotel-secondary transition-colors duration-200
+        font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2
+        focus:ring-hotel-primary;
+    }
+
+    .input-field {
+        @apply w-full px-4 py-3 border border-gray-300 rounded-lg
+        focus:outline-none focus:ring-2 focus:ring-hotel-primary
+        focus:border-transparent transition-all duration-200;
+    }
+
+    .input-label {
+        @apply block text-gray-700 text-sm font-semibold mb-2;
+    }
+
+    .error-text {
+        @apply mt-1 text-sm text-red-600;
+    }
+
+    .link-primary {
+        @apply text-hotel-primary hover:text-hotel-secondary font-semibold transition-colors;
+    }
+}
