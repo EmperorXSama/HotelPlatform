@@ -1,6 +1,7 @@
 ﻿using HotelPlatform.Domain.Common.ValueObjects;
 using HotelPlatform.Domain.Enums;
 using HotelPlatform.Domain.Hotels;
+using HotelPlatform.Domain.Hotels.Entities;
 using HotelPlatform.Infrastructure.Data.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -134,17 +135,15 @@ public class HotelConfiguration : IEntityTypeConfiguration<Hotel>
             amenityBuilder.WithOwner()
                 .HasForeignKey("hotel_id");
 
-            amenityBuilder.Property<int>("id")
-                .ValueGeneratedOnAdd();
-
-            amenityBuilder.HasKey("id");
+            // Remove the shadow id property
+            // Use composite key instead
+            amenityBuilder.HasKey("hotel_id", nameof(HotelSelectedAmenity.AmenityDefinitionId));
 
             amenityBuilder.Property(a => a.AmenityDefinitionId)
                 .HasColumnName("amenity_definition_id")
                 .HasStronglyTypedId()
                 .IsRequired();
 
-            // Upcharge as nested owned type
             amenityBuilder.OwnsOne(a => a.Upcharge, upchargeBuilder =>
             {
                 upchargeBuilder.Property(u => u.Type)
@@ -161,11 +160,7 @@ public class HotelConfiguration : IEntityTypeConfiguration<Hotel>
                     .HasConversion(new CurrencyConverter())
                     .HasMaxLength(3);
             });
-
-            amenityBuilder.HasIndex("hotel_id", nameof(HotelSelectedAmenity.AmenityDefinitionId))
-                .IsUnique();
         });
-
         // Rooms - one-to-many relationship
         builder.HasMany(h => h.Rooms)
             .WithOne()
@@ -180,5 +175,6 @@ public class HotelConfiguration : IEntityTypeConfiguration<Hotel>
         builder.HasIndex(h => h.OwnerId);
         builder.HasIndex(h => h.Status);
         builder.HasIndex(h => h.Name);
+        
     }
 }

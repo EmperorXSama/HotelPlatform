@@ -9,4 +9,5 @@ public record struct HotelId(Guid Value): IStronglyTypedId<Guid>
     
     public static implicit operator Guid(HotelId id) => id.Value;
     public static explicit operator HotelId(Guid id) => new(id);
+    
 }

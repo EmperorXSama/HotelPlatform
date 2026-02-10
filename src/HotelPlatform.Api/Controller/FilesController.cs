@@ -1,120 +1,60 @@
-﻿// Api/Controllers/FilesController.cs
-
-using HotelPlatform.Application.Common.Interfaces;
-using HotelPlatform.Application.Common.Interfaces.Repositories;
+﻿using ErrorOr;
+using HotelPlatform.Api.Controller;
+using HotelPlatform.Application.Features.Files.Commands.UploadFileCommand;
+using HotelPlatform.Application.Features.Files.Queries.GetUsserFiles;
+using HotelPlatform.Application.Features.Files.Queries.ServeFile;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelPlatform.Api.Controller;
-
-[ApiController]
 [Route("api/[controller]")]
 [Authorize]
 [Tags("Files")]
-public class FilesController : ControllerBase
+public class FilesController : ApiBaseController  // Change this
 {
-    private readonly IFileStorageService _storageService;
-    private readonly ICurrentUser _currentUser;
-    private readonly IUserRepository _userRepository;
+    private readonly ISender _sender;
 
-    public FilesController(
-        IFileStorageService storageService,
-        ICurrentUser currentUser,
-        IUserRepository userRepository)
+    public FilesController(ISender sender)
     {
-        _storageService = storageService;
-        _currentUser = currentUser;
-        _userRepository = userRepository;
+        _sender = sender;
     }
 
-    /// <summary>
-    /// Upload a file
-    /// </summary>
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ServeFile(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new ServeFileQuery(id), cancellationToken);
+
+        // Keep this as-is since it returns a file stream, not JSON
+        return result.Match<IActionResult>(
+            file => File(file.Stream, file.ContentType, file.FileName, enableRangeProcessing: true),
+            errors => errors.First().Type == ErrorType.NotFound
+                ? NotFound()
+                : BadRequest(errors.First().Description));
+    }
+
     [HttpPost("upload")]
     [DisableRequestSizeLimit]
-    [ProducesResponseType(typeof(UploadFileResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UploadFile(
         IFormFile file,
         CancellationToken cancellationToken)
     {
-        if (!_currentUser.IsAuthenticated || string.IsNullOrEmpty(_currentUser.Id))
-        {
-            return Unauthorized();
-        }
-
-        var user = await _userRepository.GetByIdentityIdAsync(_currentUser.Id, cancellationToken);
-        if (user is null)
-        {
-            return NotFound("User profile not found.");
-        }
-
         await using var stream = file.OpenReadStream();
-        var result = await _storageService.UploadAsync(
-            stream,
-            file.FileName,
-            file.ContentType,
-            user.Id,
+
+        var result = await _sender.Send(
+            new UploadFileCommand(stream, file.FileName, file.ContentType),
             cancellationToken);
 
-        return result.Match<IActionResult>(
-            storedFile => Ok(new UploadFileResponse(
-                storedFile.Id.Value,
-                storedFile.OriginalFileName,
-                storedFile.Url,
-                storedFile.ContentType,
-                storedFile.SizeInBytes)),
-            errors => BadRequest(errors.First().Description));
+        return ToApiResponse(result);  // Use wrapped response
     }
 
-    /// <summary>
-    /// Get all files for the current user
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<FileResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpGet("my-files")]
     public async Task<IActionResult> GetUserFiles(CancellationToken cancellationToken)
     {
-        if (!_currentUser.IsAuthenticated || string.IsNullOrEmpty(_currentUser.Id))
-        {
-            return Unauthorized();
-        }
+        var result = await _sender.Send(new GetUserFilesQuery(), cancellationToken);
 
-        var user = await _userRepository.GetByIdentityIdAsync(_currentUser.Id, cancellationToken);
-        if (user is null)
-        {
-            return NotFound("User profile not found.");
-        }
-
-        var result = await _storageService.GetByOwnerAsync(user.Id, cancellationToken);
-
-        return result.Match<IActionResult>(
-            files => Ok(files.Select(f => new FileResponse(
-                f.Id.Value,
-                f.OriginalFileName,
-                f.Url,
-                f.ContentType,
-                f.SizeInBytes,
-                f.CreatedAt))),
-            errors => BadRequest(errors.First().Description));
+        return ToApiResponse(result);  // Use wrapped response
     }
 }
-
-public sealed record UploadFileResponse(
-    Guid Id,
-    string FileName,
-    string Url,
-    string ContentType,
-    long SizeInBytes);
-
-public sealed record FileResponse(
-    Guid Id,
-    string FileName,
-    string Url,
-    string ContentType,
-    long SizeInBytes,
-    DateTimeOffset UploadedAt);

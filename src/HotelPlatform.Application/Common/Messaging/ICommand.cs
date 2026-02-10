@@ -2,9 +2,14 @@
 
 namespace HotelPlatform.Application.Common.Messaging;
 
+// Marker interfaces (no MediatR inheritance)
+public interface ICommand { }
+public interface IPublicEndpoint { }
 
-public interface ICommand: IRequest{}
+// Commands with response - inherit from marker + MediatR
+public interface ICommand<out TResponse> : ICommand, IRequest<TResponse> { }
+public interface IPublicCommand<out TResponse> : IPublicEndpoint, ICommand, IRequest<TResponse> { }
 
-public interface ICommand<out TResponse> : IRequest<TResponse>{}
-
-public interface IQuery<out TResponse> : IRequest<TResponse>{}
+// Queries
+public interface IQuery<out TResponse> : IRequest<TResponse> { }
+public interface IPublicQuery<out TResponse> : IPublicEndpoint, IRequest<TResponse> { }

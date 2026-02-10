@@ -14,7 +14,3 @@ C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\H
 C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\refint\HotelPlatform.Application.dll
 C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\HotelPlatform.Application.pdb
 C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\obj\Debug\net10.0\ref\HotelPlatform.Application.dll
-C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\Microsoft.AspNetCore.Http.Features.dll
-C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\Microsoft.Net.Http.Headers.dll
-C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\Microsoft.AspNetCore.Connections.Abstractions.dll
-C:\Personal\work\HotelPlatform\src\HotelPlatform.Application\bin\Debug\net10.0\Microsoft.Extensions.Features.dll

@@ -1,9 +1,12 @@
 ﻿using System.Security.Claims;
 using Azure.Identity;
 using HotelPlatform.Api.Authentication;
+using HotelPlatform.Api.Services;
 using HotelPlatform.Application;
+using HotelPlatform.Application.Common.Interfaces.Storage;
 using HotelPlatform.Application.Common.Settings;
 using HotelPlatform.Infrastructure;
+using HotelPlatform.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -15,6 +18,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration) =>
         services
+            .AddApiServices()
             .AddSettings(configuration)
             .AddApplicationServices(configuration)
             .AddInfrastructureServices(configuration)
@@ -99,6 +103,12 @@ public static class DependencyInjection
 
         return services;
     }
-    
+
+    private static IServiceCollection AddApiServices(this IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+        services.AddScoped<IFileUrlResolver, FileUrlResolver>();
+        return services;
+    }
 
 }

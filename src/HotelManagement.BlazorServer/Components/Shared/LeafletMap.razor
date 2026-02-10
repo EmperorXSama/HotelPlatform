@@ -1,0 +1,41 @@
+﻿@* Components/LeafletMap.razor *@
+@inject IJSRuntime Js
+@implements IAsyncDisposable
+
+<div id="@_mapId" style="height: @Height; width: 100%; border-radius: 12px;"></div>
+
+@code {
+    private string _mapId = $"map-{Guid.NewGuid():N}";
+    private bool _initialized;
+
+    [Parameter] public double Latitude { get; set; } = 51.505;
+    [Parameter] public double Longitude { get; set; } = -0.09;
+    [Parameter] public int Zoom { get; set; } = 13;
+    [Parameter] public string Height { get; set; } = "300px";
+    [Parameter] public string? MarkerPopup { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Js.InvokeVoidAsync("leafletInterop.initMap", _mapId, Latitude, Longitude, Zoom);
+            _initialized = true;
+        }
+    }
+
+    public async Task UpdateLocationAsync(double latitude, double longitude, string? popup = null)
+    {
+        if (_initialized)
+        {
+            await Js.InvokeVoidAsync("leafletInterop.updateMarker", _mapId, latitude, longitude, popup);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_initialized)
+        {
+            await Js.InvokeVoidAsync("leafletInterop.destroyMap", _mapId);
+        }
+    }
+}

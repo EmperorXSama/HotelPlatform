@@ -5,6 +5,7 @@ using HotelPlatform.Application.Common.Interfaces.Repositories;
 using HotelPlatform.Application.Common.Interfaces.Storage;
 using HotelPlatform.Application.Common.Interfaces;
 using HotelPlatform.Application.Common.Settings;
+using HotelPlatform.Application.Features.Files;
 using HotelPlatform.Domain.Common.StronglyTypedIds;
 using HotelPlatform.Domain.Files;
 using Microsoft.Extensions.Logging;
@@ -52,6 +53,7 @@ public class FileStorageService : IFileStorageService
         UserId ownerId,
         CancellationToken cancellationToken = default)
     {
+        
         // Validate file
         var validationResult = _fileValidator.Validate(fileName, contentType, fileStream.Length);
         if (validationResult.IsError)
@@ -113,7 +115,6 @@ public class FileStorageService : IFileStorageService
             blobPath);
         
         await _storedFileRepository.AddAsync(storedFile, cancellationToken);
-
         _logger.LogInformation(
             "File {FileName} uploaded successfully to {Provider}. StoredFileId: {StoredFileId}",
             fileName, providerName, storedFile.Id);
@@ -172,7 +173,6 @@ public class FileStorageService : IFileStorageService
         }
 
         _storedFileRepository.Delete(storedFile);
-
         return Result.Deleted;
     }
 
@@ -182,6 +182,28 @@ public class FileStorageService : IFileStorageService
     {
         var files = await _storedFileRepository.GetByOwnerIdAsync(ownerId, cancellationToken);
         return files.ToList();
+    }
+
+    public async Task<ErrorOr<FileDownloadResult>> GetFileStreamAsync(
+        StoredFileId fileId,
+        CancellationToken cancellationToken = default)
+    {
+        var storedFile = await _storedFileRepository.GetByIdAsync(fileId, cancellationToken);
+        if (storedFile is null)
+            return StorageErrors.FileNotFound;
+
+        var provider = GetProviderByName(storedFile.StorageProvider);
+        if (provider is null)
+            return StorageErrors.ProviderUnavailable(storedFile.StorageProvider);
+
+        var streamResult = await provider.DownloadAsync(storedFile.BlobPath!, cancellationToken);
+        if (streamResult.IsError)
+            return streamResult.Errors;
+
+        return new FileDownloadResult(
+            streamResult.Value,
+            storedFile.ContentType,
+            storedFile.OriginalFileName);
     }
 
     private async Task<ErrorOr<(string Url, string StoredFileName, string BlobPath, string ProviderName)>> TryUploadAsync(

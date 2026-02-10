@@ -1,0 +1,75 @@
+﻿@page "/HotelList"
+@using HotelManagement.BlazorServer.Components.Pages.Hotels.Shared
+@layout PublicLayout
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Hotels</h1>
+
+    @* Error Messages *@
+    @if (_errors.Any())
+    {
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+            <ul class="list-disc list-inside">
+                @foreach (var error in _errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @* Hotels Grid *@
+    @if (hotels?.Items.Any() == true)
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            @foreach (var hotel in hotels.Items)
+            {
+                <HotelCard Hotel="hotel" />
+            }
+        </div>
+
+        @* Loading Indicator *@
+        @if (_isLoading)
+        {
+            <div class="flex justify-center items-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        }
+
+        @*$1$ Intersection Observer Target #1#
+        @if (hotels.HasNextPage && !_isLoading)
+        {
+            <div @ref="_loadMoreTrigger" class="h-20 flex justify-center items-center">
+                <p class="text-gray-500">Scroll to load more...</p>
+            </div>
+        }
+
+        $1$ End of Results Message #1#
+        @if (!hotels.HasNextPage && !_isLoading)
+        {
+            <div class="text-center py-8">
+                <p class="text-gray-500">You've reached the end of the results</p>
+                <p class="text-sm text-gray-400 mt-2">Showing @hotels.Items.Count of @hotels.TotalItems hotels</p>
+            </div>
+        }*@
+    }
+    else if (_isLoading)
+    {
+        @* Initial Loading State *@
+        <div class="flex justify-center items-center py-20">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Loading hotels...</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        @* No Results *@
+        <div class="text-center py-20">
+            <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <p class="text-xl text-gray-600">No hotels found</p>
+        </div>
+    }
+</div>

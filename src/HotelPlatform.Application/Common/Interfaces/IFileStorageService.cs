@@ -1,10 +1,11 @@
 ﻿// Application/Common/Interfaces/Storage/IFileStorageService.cs
 
+using HotelPlatform.Application.Features.Files;
 using HotelPlatform.Domain.Files;
 
 namespace HotelPlatform.Application.Common.Interfaces;
 
-public interface IFileStorageService
+public interface IFileStorageService 
 {
     Task<ErrorOr<StoredFile>> UploadAsync(
         Stream fileStream,
@@ -23,5 +24,9 @@ public interface IFileStorageService
 
     Task<ErrorOr<IReadOnlyList<StoredFile>>> GetByOwnerAsync(
         UserId ownerId,
+        CancellationToken cancellationToken = default);
+    
+    Task<ErrorOr<FileDownloadResult>> GetFileStreamAsync(
+        StoredFileId fileId,
         CancellationToken cancellationToken = default);
 }

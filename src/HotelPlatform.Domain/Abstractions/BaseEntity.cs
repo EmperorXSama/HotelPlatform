@@ -35,6 +35,7 @@ public abstract class BaseEntity<TId> : BaseEntity, IEquatable<BaseEntity<TId>>
 public class BaseEntity
 {
     private readonly List<BaseDomainEvent> _domainEvents = new();
+    
     [NotMapped]
     public IReadOnlyCollection<BaseDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
     

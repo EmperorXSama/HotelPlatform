@@ -1,0 +1,22 @@
+﻿@import "tailwindcss";
+@theme {
+    --font-family-sans: 'Ubuntu', sans-serif;
+}
+
+@layer base {
+    body {
+        font-family: var(--font-family-sans);
+    }
+}
+@theme {
+    --color-coral-50: #fef7f5;
+    --color-coral-100: #fdeae4;
+    --color-coral-200: #fbd5c9;
+    --color-coral-300: #f8b5a0;
+    --color-coral-400: #f48b6a;
+    --color-coral-500: #ee6a45;
+    --color-coral-600: #dc4b25;
+    --color-coral-700: #b93b1c;
+    --color-coral-800: #99331c;
+    --color-coral-900: #7f2f1c;
+}

@@ -248,24 +248,57 @@ public class Hotel : AggregateRoot<HotelId>
 
         return Result.Updated;
     }
-
-    public ErrorOr<Updated> UpdateAmenityUpcharge(
-        HotelAmenityDefinitionId amenityDefinitionId,
-        Upcharge newUpcharge)
+    public ErrorOr<Updated> SyncAmenities(List<HotelSelectedAmenity> activeAmenities)
     {
         if (Status == HotelStatus.Archived)
             return DomainErrors.Hotel.CannotModifyArchivedHotel;
 
-        var index = _amenities.FindIndex(a => a.AmenityDefinitionId == amenityDefinitionId);
-        if (index == -1)
-            return DomainErrors.Hotel.AmenityNotFound;
+        var activeAmenityIds = activeAmenities
+            .Select(a => a.AmenityDefinitionId)
+            .ToHashSet();
 
-        _amenities[index] = _amenities[index].WithUpcharge(newUpcharge);
+        // Check for duplicates in the input
+        if (activeAmenityIds.Count != activeAmenities.Count)
+            return DomainErrors.Hotel.DuplicateAmenity;
+
+        // Clear all existing amenities and add the new list
+        // This ensures EF Core tracks the changes properly
+        _amenities.Clear();
+        _amenities.AddRange(activeAmenities);
+
         SetUpdated();
 
         return Result.Updated;
     }
+    // In HotelPlatform.Domain.Hotels.Hotel.cs
 
+    public ErrorOr<Success> UpdateAmenityUpcharge(
+        HotelAmenityDefinitionId amenityDefinitionId,
+        Upcharge newUpcharge)
+    {
+        var existingAmenity = _amenities.FirstOrDefault(a => a.AmenityDefinitionId == amenityDefinitionId);
+
+        if (existingAmenity is null)
+        {
+            return Error.NotFound(
+                code: "Hotel.AmenityNotFound",
+                description: "The specified amenity is not configured for this hotel.");
+        }
+
+        // 1. Remove the old immutable value object
+        _amenities.Remove(existingAmenity);
+
+        // 2. Create the new version
+        var updatedAmenity = existingAmenity.WithUpcharge(newUpcharge);
+
+        // 3. Add the new version to the list
+        _amenities.Add(updatedAmenity);
+
+        // 4. Mark Aggregate as modified
+        SetUpdated();
+
+        return Result.Success;
+    }
     #endregion
 
     #region Rooms

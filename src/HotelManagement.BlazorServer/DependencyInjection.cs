@@ -3,7 +3,6 @@ using System.Security.Claims;
 using HotelManagement.BlazorServer.Http;
 using HotelManagement.BlazorServer.Services;
 using HotelManagement.BlazorServer.Settings;
-using HotelPlatform.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -101,24 +100,12 @@ public static class DependencyInjection
         // Register the handler
         services.AddScoped<TokenForwardingHandler>();
 
-        // Get API base URL
-        var apiBaseUrl = configuration.GetValue<string>("Api:BaseUrl")
-                         ?? throw new InvalidOperationException("Api:BaseUrl not configured");
+        var apiBaseUrl = configuration["ApiSettings:BaseUrl"]
+                         ?? throw new InvalidOperationException("API base URL not configured");
 
-        // Register typed HttpClient
-        services.AddHttpClient<IHotelApiClient, HotelApiClient>(client =>
-            {
-                client.BaseAddress = new Uri(apiBaseUrl);
-                client.DefaultRequestHeaders.Add("Accept", "application/json");
-                client.Timeout = TimeSpan.FromSeconds(30);
-            })
-            .AddHttpMessageHandler<TokenForwardingHandler>()
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback =
-                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
+        services.AddHotelApiServices(apiBaseUrl);
 
+      
         return services;
     }
     static void MapKeycloakRolesToClaims(TokenValidatedContext context)

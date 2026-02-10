@@ -25,7 +25,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HotelPlatform.AppHost")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b7d847d1f86ad160c4928cc84056803b3b83752e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+93f44c3c6dce9e334502590ee602ac00c4448d24")]
 [assembly: System.Reflection.AssemblyProductAttribute("HotelPlatform.AppHost")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HotelPlatform.AppHost")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

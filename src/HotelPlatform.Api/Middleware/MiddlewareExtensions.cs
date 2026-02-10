@@ -8,4 +8,10 @@ public static class MiddlewareExtensions
     {
         return app.UseMiddleware<AuthenticationHeaderMiddleware>();
     }
+
+    public static IApplicationBuilder UseCustomMiddlewares(this IApplicationBuilder app)
+    {
+        app.UseMiddleware<RequestLoggingMiddleware>();
+        return app;
+    }
 }

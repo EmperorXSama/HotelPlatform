@@ -45,6 +45,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseHttpsRedirection();
 app.UseAuthenticationHeaderValidation();
+app.UseCustomMiddlewares();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

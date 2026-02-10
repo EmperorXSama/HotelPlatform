@@ -1,33 +1,31 @@
 ﻿// Api/Controllers/HotelsController.cs
 
 using ErrorOr;
+using HotelPlatform.Api.Dto.RequestObjects;
 using HotelPlatform.Application.Features.Hotels.Commands.CreateHotel;
+using HotelPlatform.Application.Features.Hotels.Commands.UpdateAmenities;
+using HotelPlatform.Application.Features.Hotels.Queries.GetAllHotelSummary;
+using HotelPlatform.Application.Features.Hotels.Queries.GetById;
+using HotelPlatform.Application.Features.Hotels.Queries.GetHotelByUserId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelPlatform.Api.Controller;
 
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
 [Tags("Hotels")]
-public class HotelsController : ControllerBase
+public class HotelsController : ApiBaseController
 {
     private readonly ISender _sender;
-
-    public HotelsController(ISender sender)
+    private ILogger<HotelsController> _logger;
+    public HotelsController(ISender sender, ILogger<HotelsController> logger)
     {
         _sender = sender;
+        _logger = logger;
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(CreateHotelResult), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Create(
-        [FromBody] CreateHotelRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CreateHotelRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateHotelCommand(
             request.Name,
@@ -44,7 +42,14 @@ public class HotelsController : ControllerBase
             request.Pictures.Select(p => new CreateHotelPictureDto(
                 p.StoredFileId,
                 p.AltText,
-                p.IsMain)).ToList());
+                p.IsMain)).ToList(),
+            request.Amenities?.Select(a => new CreateHotelAmenityDto(
+                a.AmenityDefinitionId,
+                a.UpchargeType,
+                a.UpchargeAmount,
+                a.Currency
+            )).ToList())
+            ;
 
         var result = await _sender.Send(command, cancellationToken);
 
@@ -59,11 +64,48 @@ public class HotelsController : ControllerBase
                 detail: errors.First().Description));
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    [HttpGet]
+    public async Task<IActionResult> GetAllHotelSummary(
+        [FromQuery] GetAllHotelSummaryFilter filter, 
+        CancellationToken cancellationToken)
     {
-        // TODO: Implement GetHotelByIdQuery
-        return Ok();
+        var query = new GetAllHotelSummaryQuery(filter);
+        var result = await _sender.Send(query, cancellationToken);
+        
+        return ToApiResponse(result);
+    }
+
+    [HttpGet("my-hotels")]
+    [Authorize(Policy = "HotelOwner")]
+    public async Task<IActionResult> GetMyHotels(CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetHotelsByOwnerQuery(), cancellationToken);
+        return ToApiResponse(result);
+    }
+
+    [HttpPut("{hotelId:guid}")]
+    [Authorize(Policy = "HotelOwner")]
+    public async Task<IActionResult> UpdateHotelAmenities(Guid hotelId, [FromBody] List<Guid> amenitiesId, CancellationToken cancellationToken)
+    {
+        var command = new UpdateHotelAmenitiesCommand(hotelId, amenitiesId);
+        var result = await _sender.Send(command, cancellationToken);
+        return ToApiResponse(result);
+    }
+    
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous] 
+    public async Task<IActionResult> GetById(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new GetHotelByIdQuery(id), cancellationToken);
+
+        return result.Match<IActionResult>(
+            Ok,
+            errors => errors.First().Type == ErrorType.NotFound
+                ? NotFound(errors.First().Description)
+                : BadRequest(errors.First().Description));
     }
 
     private static int GetStatusCode(Error error) => error.Type switch
@@ -76,22 +118,3 @@ public class HotelsController : ControllerBase
         _ => StatusCodes.Status500InternalServerError
     };
 }
-
-public sealed record CreateHotelRequest(
-    string Name,
-    string? Description,
-    CreateHotelAddressRequest? Address,
-    List<CreateHotelPictureRequest> Pictures);
-
-public sealed record CreateHotelAddressRequest(
-    string Street,
-    string City,
-    string Country,
-    string? PostalCode,
-    double? Latitude,
-    double? Longitude);
-
-public sealed record CreateHotelPictureRequest(
-    Guid StoredFileId,
-    string? AltText,
-    bool IsMain);

@@ -1,0 +1,130 @@
+﻿@using HotelManagement.BlazorServer.Components.Amenities
+@using HotelManagement.BlazorServer.Components.Pages.Hotels.Shared
+@using HotelManagement.BlazorServer.Models
+@using HotelManagement.BlazorServer.models.Response.RefereneceData
+
+@* Components/Rooms/RoomAmenitySelector.razor *@
+@* Example showing how to reuse AmenitySelector for room amenities *@
+
+<div class="space-y-6">
+    <AmenitySelector Config="_roomAmenitySelectorConfig"
+                     @bind-SelectedAmenities="SelectedAmenities"
+                     ShowActions="@ShowActions"
+                     OnConfirm="HandleConfirm"
+                     OnAmenityAdded="HandleAmenityAdded"
+                     OnAmenityRemoved="HandleAmenityRemoved"
+                     OnUpchargeUpdated="HandleUpchargeUpdated" />
+</div>
+
+@code {
+    /// <summary>
+    /// The room ID when editing existing room amenities
+    /// </summary>
+    [Parameter] public Guid? RoomId { get; set; }
+    
+    /// <summary>
+    /// Currently selected room amenities
+    /// </summary>
+    [Parameter] public List<SelectedAmenityModel> SelectedAmenities { get; set; } = [];
+    
+    /// <summary>
+    /// Callback when selection changes
+    /// </summary>
+    [Parameter] public EventCallback<List<SelectedAmenityModel>> SelectedAmenitiesChanged { get; set; }
+    
+    /// <summary>
+    /// Whether to show action buttons
+    /// </summary>
+    [Parameter] public bool ShowActions { get; set; } = false;
+    
+    /// <summary>
+    /// Mode: 'batch' for collecting selections, 'immediate' for API calls on each change
+    /// </summary>
+    [Parameter] public string Mode { get; set; } = "batch";
+    
+    /// <summary>
+    /// Callback when confirm is clicked (batch mode)
+    /// </summary>
+    [Parameter] public EventCallback<List<SelectedAmenityModel>> OnConfirm { get; set; }
+    
+    // [Inject] private IRoomAmenityService RoomAmenityService { get; set; } = default!;
+
+    private readonly AmenitySelectorConfig _roomAmenitySelectorConfig = new()
+    {
+        ContextType = AmenityContextType.Room,
+        Title = "Room Amenities",
+        AllowUpchargeEditing = true,
+        DefaultCurrency = "USD",
+        AvailableCurrencies = ["USD", "EUR", "GBP"],
+        InitialVisibleCount = 6,
+        MaxSelections = 0 // No limit
+    };
+
+    private async Task HandleConfirm(List<SelectedAmenityModel> amenities)
+    {
+        if (OnConfirm.HasDelegate)
+        {
+            await OnConfirm.InvokeAsync(amenities);
+        }
+    }
+
+    private async Task HandleAmenityAdded(SelectedAmenityModel amenity)
+    {
+        // Propagate the change to parent
+        await SelectedAmenitiesChanged.InvokeAsync(SelectedAmenities);
+        
+        // Only make API call in immediate mode and when we have a RoomId
+        if (Mode == "immediate" && RoomId.HasValue)
+        {
+            await AddRoomAmenityAsync(RoomId.Value, amenity);
+        }
+    }
+
+    private async Task HandleAmenityRemoved(Guid amenityId)
+    {
+        await SelectedAmenitiesChanged.InvokeAsync(SelectedAmenities);
+        
+        if (Mode == "immediate" && RoomId.HasValue)
+        {
+            await RemoveRoomAmenityAsync(RoomId.Value, amenityId);
+        }
+    }
+
+    private async Task HandleUpchargeUpdated(SelectedAmenityModel amenity)
+    {
+        await SelectedAmenitiesChanged.InvokeAsync(SelectedAmenities);
+        
+        if (Mode == "immediate" && RoomId.HasValue)
+        {
+            await UpdateRoomAmenityUpchargeAsync(RoomId.Value, amenity);
+        }
+    }
+
+    // ==========================================
+    // BOILERPLATE API METHODS
+    // ==========================================
+
+    private Task<ErrorOr<Success>> AddRoomAmenityAsync(Guid roomId, SelectedAmenityModel amenity)
+    {
+        // TODO: Implement
+        // return RoomAmenityService.AddAmenityAsync(roomId, amenity);
+        ErrorOr<Success> result = Result.Success;
+        return Task.FromResult(result);
+    }
+
+    private Task<ErrorOr<Success>> RemoveRoomAmenityAsync(Guid roomId, Guid amenityId)
+    {
+        // TODO: Implement
+        // return RoomAmenityService.RemoveAmenityAsync(roomId, amenityId);
+        ErrorOr<Success> result = Result.Success;
+        return Task.FromResult(result);
+    }
+
+    private Task<ErrorOr<Success>> UpdateRoomAmenityUpchargeAsync(Guid roomId, SelectedAmenityModel amenity)
+    {
+        // TODO: Implement
+        // return RoomAmenityService.UpdateUpchargeAsync(roomId, amenity);
+        ErrorOr<Success> result = Result.Success;
+        return Task.FromResult(result);
+    }
+}

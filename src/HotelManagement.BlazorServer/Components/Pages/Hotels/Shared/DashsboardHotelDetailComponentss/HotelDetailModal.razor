@@ -1,0 +1,86 @@
+﻿@using HotelManagement.BlazorServer.models.Response.Hotels
+<div class="flex flex-col gap-4 animate-in">
+    <PictureDisplayerSection Pictures="@Hotel.Pictures"
+                             OnAddPicture="HandleAddPicture"
+                             OnDeletePicture="HandleDeletePicture"
+                             OnSetMainPicture="HandleSetMainPicture"
+                             HotelName="@Hotel.Name"/>
+    
+    <HotelInformations
+        HotelId="Hotel.Id"
+        HotelName="@Hotel.Name"
+        Address="@Hotel.Address.City"
+        StarAmount="4"
+        Description="@Hotel.Description"
+        Amenities="@Hotel.Amenities"
+        OnAmenitiesChanged="HandleAmenitiesChanged"/>
+    
+        <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-2">
+            </div>
+            <div class="col-span-1">
+                
+            </div>
+        </div>
+    </div>
+
+@code {
+    [Parameter, EditorRequired] public HotelDetailResponse Hotel { get; set; } = null!;
+
+    [Parameter] public EventCallback<HotelDetailResponse> OnHotelDataChanged { get; set; }
+
+    // Handler for amenities changes
+    private async Task HandleAmenitiesChanged(List<HotelAmenityResponse> updatedAmenities)
+    {
+        // Create new hotel record with updated amenities
+        var updatedHotel = Hotel with { Amenities = updatedAmenities };
+
+        // Notify parent component
+        await OnHotelDataChanged.InvokeAsync(updatedHotel);
+    }
+
+    // Handler for setting main picture
+    private async Task HandleSetMainPicture(Guid pictureId)
+    {
+        // Create new picture list with updated IsMain status
+        var updatedPictures = Hotel.Pictures.Select(pic =>
+            pic with { IsMain = pic.StoredFileId == pictureId }
+        ).ToList();
+
+        // Create new hotel record with updated pictures
+        var updatedHotel = Hotel with { Pictures = updatedPictures };
+
+        // Notify parent
+        await OnHotelDataChanged.InvokeAsync(updatedHotel);
+    }
+
+    private async Task HandleDeletePicture(Guid pictureId)
+    {
+        // Create new picture list without the deleted picture
+        var updatedPictures = Hotel.Pictures
+            .Where(p => p.StoredFileId != pictureId)
+            .ToList();
+
+        // Create new hotel record with updated pictures
+        var updatedHotel = Hotel with { Pictures = updatedPictures };
+
+        // Notify parent
+        await OnHotelDataChanged.InvokeAsync(updatedHotel);
+    }
+
+    private async Task HandleAddPicture(HotelPictureResponse newPicture)
+    {
+        // Create new picture list with the added picture
+        var updatedPictures = new List<HotelPictureResponse>(Hotel.Pictures)
+        {
+            newPicture
+        };
+
+        // Create new hotel record with updated pictures
+        var updatedHotel = Hotel with { Pictures = updatedPictures };
+
+        // Notify parent
+        await OnHotelDataChanged.InvokeAsync(updatedHotel);
+    }
+
+}

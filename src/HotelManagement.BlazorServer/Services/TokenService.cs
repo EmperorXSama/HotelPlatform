@@ -1,12 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
-using HotelManagement.BlazorServer.Services;
 using HotelManagement.BlazorServer.Settings;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 
-namespace HotelPlatform.Web.Services;
+namespace HotelManagement.BlazorServer.Services;
 
 public class TokenService : ITokenService
 {

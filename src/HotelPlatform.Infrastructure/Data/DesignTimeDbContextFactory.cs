@@ -24,16 +24,8 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var connectionString = configuration
-            .GetSection("Database:ConnectionString")
-            .Value;
-
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new InvalidOperationException(
-                "Connection string not found. Ensure 'Database:ConnectionString' is set in appsettings.json");
-        }
-
+        var connectionString = configuration.GetValue<string>("Database:ConnectionString") 
+                               ?? "Host=localhost;Database=DummyDb;Username=postgres;Password=password";
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         
         optionsBuilder.UseNpgsql(connectionString, npgOptions =>

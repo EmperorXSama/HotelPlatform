@@ -8,6 +8,9 @@ public interface IReferenceDataRepository
     Task<HotelAmenityDefinition?> GetHotelAmenityByIdAsync(
         HotelAmenityDefinitionId id, 
         CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<HotelAmenityDefinition>> GetHotelAmenitiesByIdsAsync(
+        IEnumerable<HotelAmenityDefinitionId> ids,
+        CancellationToken cancellationToken = default);
     
     Task<HotelAmenityDefinition?> GetHotelAmenityByCodeAsync(
         string code, 

@@ -1,0 +1,130 @@
+﻿@using HotelManagement.BlazorServer.Components.Shared
+@using HotelManagement.BlazorServer.models.Response.Hotels
+@using HotelManagement.BlazorServer.models.Response.RefereneceData
+<div class="grid grid-cols-3 gap-4">
+    <div class="col-span-2">
+        <!-- Hotel Header -->
+        <div class="space-y-4">
+            <!-- Hotel Name -->
+            <h1 class="text-4xl font-bold text-gray-900">@HotelName</h1>
+        
+            <!-- Location and Rating -->
+            <div class="flex items-center gap-4 text-gray-600">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>@Address</span>
+                </div>
+            
+                <div class="flex items-center gap-1">
+                    <svg class="w-5 h-5 text-orange-500 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                    </svg>
+                    <span class="font-semibold">@StarAmount</span>
+                </div>
+            </div>
+        
+            <!-- Description -->
+            <p class="text-gray-700 leading-relaxed">
+                @Description
+            </p>
+        
+            <!-- Read More Link -->
+            <button class="text-blue-600 hover:text-blue-800 font-medium">
+                Read More
+            </button>
+        </div>
+    </div>
+    <div class="col-span-1">
+        <div class="flex flex-col gap-3">
+            <!-- Amenities Section -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                <div class="flex justify-between px-4 items-center">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Amenities</h2>
+                    <button @onclick="@(() => isAmenityModification = true)" class="rounded-full cursor-pointer bg-indigo-600 px-2.5 py-1 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Modify</button>
+                </div>
+
+
+                <div class="grid grid-cols-3 gap-3">
+                    @foreach (var amenity in Amenities)
+                    {
+                        <div class="border border-gray-200 rounded-lg p-3 flex flex-col items-center text-center gap-2">
+                            <!-- Icon -->
+                            <div class="text-gray-600">
+                                <AmenityIcon IconCode="@amenity.IconCode"
+                                             CssClass="text-gray-600"
+                                             Size="24"/>
+                            </div>
+
+                            <!-- Amenity Name -->
+                            <span class="text-sm text-gray-900 font-medium">@amenity.Name</span>
+
+                            <!-- Price -->
+                            @if (amenity.UpchargeAmount > 0)
+                            {
+                                <span class="text-xs text-gray-600 font-medium">
+                                    @amenity.UpchargeAmount.ToString("C")
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-xs text-green-600 font-medium">Free</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            @if (isAmenityModification)
+            {
+                <AmenitySelector 
+                    SelectedAmenitiesIds="@(Amenities.Select(a => a.AmenityDefinitionId).ToList())" 
+                    TargetGuid="HotelId"
+                    OnConfirm="HandleAmenityConfirm"/>
+            }
+        </div>
+        
+    </div>
+    
+</div>
+
+
+@code {
+    [Parameter] public Guid HotelId { get; set; }
+    [Parameter] public string HotelName { get; set; }
+    [Parameter] public int StarAmount { get; set; }
+    [Parameter] public string Address { get; set; }
+    [Parameter] public string Description { get; set; }
+    [Parameter, EditorRequired] public List<HotelAmenityResponse> Amenities { get; set; } = new();
+    
+    [Parameter] public EventCallback<List<HotelAmenityResponse>> OnAmenitiesChanged { get; set; }
+    
+    private bool isAmenityModification = false;
+
+    private async Task HandleAmenityConfirm(List<SelectedAmenityModel> selectedAmenities)
+    {
+        // Convert selected amenities to response format
+        var updatedAmenities = selectedAmenities.Select(a => new HotelAmenityResponse
+        (
+        
+            a.AmenityId,
+            a.Code,
+            a.Name,
+            a.IconCode,
+            a.Category,
+            (int)a.UpchargeType,
+            a.UpchargeAmount,
+            a.Currency
+        )).ToList();
+        
+        // Update local state
+        Amenities = updatedAmenities;
+        isAmenityModification = false;
+        
+        // Notify parent
+        await OnAmenitiesChanged.InvokeAsync(updatedAmenities);
+    }
+}

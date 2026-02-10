@@ -2,6 +2,7 @@
 using HotelPlatform.Application.Common.Interfaces.Repositories;
 using HotelPlatform.Application.Common.Interfaces.Storage;
 using HotelPlatform.Domain.Common.ValueObjects;
+using HotelPlatform.Domain.Hotels.Entities;
 
 
 namespace HotelPlatform.Application.Features.Hotels.Commands.CreateHotel;
@@ -12,19 +13,20 @@ public sealed class CreateHotelCommandHandler
     private readonly IHotelRepository _hotelRepository;
     private readonly IUserRepository _userRepository;
     private readonly IStoredFileRepository _storedFileRepository;
+    private readonly IReferenceDataRepository _referenceDataRepository;
     private readonly ICurrentUser _currentUser;
 
     public CreateHotelCommandHandler(
         IHotelRepository hotelRepository,
         IUserRepository userRepository,
         IStoredFileRepository storedFileRepository,
-        ICurrentUser currentUser,
-        IUnitOfWork unitOfWork)
+        ICurrentUser currentUser, IReferenceDataRepository referenceDataRepository)
     {
         _hotelRepository = hotelRepository;
         _userRepository = userRepository;
         _storedFileRepository = storedFileRepository;
         _currentUser = currentUser;
+        _referenceDataRepository = referenceDataRepository;
     }
 
     public async Task<ErrorOr<CreateHotelResult>> Handle(
@@ -79,7 +81,44 @@ public sealed class CreateHotelCommandHandler
             if (updateAddressResult.IsError)
                 return updateAddressResult.Errors;
         }
-
+        if (request.Amenities is not null && request.Amenities.Any())
+        {
+            var amenityIds = request.Amenities
+                .Select(a => (HotelAmenityDefinitionId)a.AmenityDefinitionId)
+                .ToList();
+            var existingAmenities = await _referenceDataRepository
+                .GetHotelAmenitiesByIdsAsync(amenityIds, cancellationToken);
+            var missingIds = amenityIds
+                .Where(id => !existingAmenities.Any(a => a.Id == id))
+                .ToList();
+            if (missingIds.Any())
+            {
+                return Error.NotFound(
+                    code: "Amenity.NotFound",
+                    description: $"Amenity definitions not found: {string.Join(", ", missingIds)}");
+            }
+        }
+        if (request.Amenities is not null)
+        {
+            foreach (var amenityDto in request.Amenities)
+            {
+                // Create upcharge based on type
+                ErrorOr<Upcharge> upchargeResult = amenityDto.UpchargeType == 0
+                    ? Upcharge.CreateFlat(amenityDto.UpchargeAmount, Currency.FromCode(amenityDto.Currency!).Value)
+                    : Upcharge.CreatePercentage(amenityDto.UpchargeAmount);
+                
+                if (upchargeResult.IsError)
+                    return upchargeResult.Errors;
+                
+                var selectedAmenity = HotelSelectedAmenity.Create(
+                    (HotelAmenityDefinitionId)amenityDto.AmenityDefinitionId,
+                    upchargeResult.Value
+                );
+                var addAmenityResult = hotel.AddAmenity(selectedAmenity);
+                if (addAmenityResult.IsError)
+                    return addAmenityResult.Errors;
+            }
+        }
         // 6. Add pictures
         string? mainPictureUrl = null;
         foreach (var pictureDto in request.Pictures.OrderByDescending(p => p.IsMain))
@@ -102,19 +141,12 @@ public sealed class CreateHotelCommandHandler
                 mainPictureUrl = storedFile?.Url;
             }
         }
-
-        // 7. Save to database
+        
         await _hotelRepository.AddAsync(hotel, cancellationToken);
 
         // 8. Return result
         return new CreateHotelResult(
-            hotel.Id.Value,
-            hotel.Name,
-            hotel.Description,
-            hotel.Status.ToString(),
-            mainPictureUrl,
-            hotel.Pictures.Count,
-            hotel.CreatedAt);
+            hotel.Id.Value);
     }
 
     private async Task<ErrorOr<Success>> ValidatePicturesAsync(

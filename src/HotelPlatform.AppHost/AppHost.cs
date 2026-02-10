@@ -12,7 +12,7 @@ var redis = builder.AddRedis("redis")
 
 
 
-var keycloak = builder.AddKeycloak("keycloak", port: 8080)
+var keycloak = builder.AddKeycloak("keycloak", port: 10800)
     .WithDataVolume()
     .WithBindMount("../../keycloak/themes/hotel-theme", "/opt/keycloak/themes/hotel-theme");
 

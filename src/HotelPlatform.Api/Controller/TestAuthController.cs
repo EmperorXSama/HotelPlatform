@@ -24,6 +24,20 @@ public class TestAuthController : ControllerBase
         return Ok(new { message = "Public endpoint - no auth required" });
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     [HttpGet("authenticated")]
     [Authorize]
     public IActionResult Authenticated()

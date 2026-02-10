@@ -1,0 +1,529 @@
+﻿@using HotelManagement.BlazorServer.Components.Shared
+@using HotelManagement.BlazorServer.Models
+@using HotelManagement.BlazorServer.models.Response.RefereneceData
+@using HotelManagement.BlazorServer.Services.ReferenceData
+@using HotelManagement.BlazorServer.Components.Amenities
+@using HotelManagement.BlazorServer.Services.Hotel
+@inject IHotelApiService HotelApiService
+@using ErrorOr
+@* Components/Amenities/AmenitySelector.razor *@
+
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    @* Header *@
+    <div class="px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">@Config.Title</h3>
+            @if (SelectedAmenities.Count > 0)
+            {
+                <span class="text-sm text-gray-500">
+                    @SelectedAmenities.Count selected
+                </span>
+            }
+        </div>
+    </div>
+
+    @* Category Tabs *@
+    @if (_categories.Count > 1)
+    {
+        <div class="px-6 py-3 border-b border-gray-100 overflow-x-auto">
+            <div class="flex gap-2 min-w-max">
+                <button type="button"
+                        class="@GetCategoryTabClass(null)"
+                        @onclick="() => SelectCategory(null)">
+                    <span>All</span>
+                    @if (GetCategoryCount(null) > 0)
+                    {
+                        <span class="ml-1.5 px-1.5 py-0.5 text-xs rounded-full @GetCategoryBadgeClass(null)">
+                            @GetCategoryCount(null)
+                        </span>
+                    }
+                </button>
+                @foreach (var category in _categories)
+                {
+                    <button type="button"
+                            class="@GetCategoryTabClass(category)"
+                            @onclick="() => SelectCategory(category)">
+                        <span>@category</span>
+                        @if (GetSelectedCountInCategory(category) > 0)
+                        {
+                            <span class="ml-1.5 w-2 h-2 rounded-full bg-coral-500"></span>
+                        }
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
+    @* Content *@
+    <div class="p-6">
+        @if (_isLoading)
+        {
+            <div class="flex items-center justify-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-2 border-coral-500 border-t-transparent"></div>
+            </div>
+        }
+        else if (_errors.Any())
+        {
+            <div class="text-center py-8">
+                <div class="text-red-500 mb-2">
+                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <p class="text-gray-600">Failed to load amenities</p>
+                <button type="button" 
+                        class="mt-3 text-coral-600 hover:text-coral-700 font-medium"
+                        @onclick="LoadAmenitiesAsync">
+                    Try again
+                </button>
+            </div>
+        }
+        else if (!_filteredAmenities.Any())
+        {
+            <div class="text-center py-8 text-gray-500">
+                No amenities available in this category
+            </div>
+        }
+        else
+        {
+            @* Amenity Grid *@
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @foreach (var amenity in GetVisibleAmenities())
+                {
+                    var isSelected = IsSelected(amenity.hotelAmenityId);
+                    var selectedAmenity = GetSelectedAmenity(amenity.hotelAmenityId);
+                    
+                    <div class="@GetAmenityItemClass(isSelected)"
+                         @onclick="() => ToggleAmenity(amenity)">
+                        @* Icon Container *@
+                        <div class="@GetIconContainerClass(isSelected)">
+                            <AmenityIcon IconCode="@amenity.IconCode" 
+                                         Size="18"
+                                         CssClass="@GetIconClass(isSelected)" />
+                        </div>
+                        
+                        @* Name & Price *@
+                        <div class="flex-1 min-w-0">
+                            <span class="@GetAmenityNameClass(isSelected)">@amenity.Name</span>
+                            @if (isSelected && selectedAmenity?.HasUpcharge == true)
+                            {
+                                <span class="ml-2 text-xs text-coral-600 font-medium">
+                                    @selectedAmenity.GetUpchargeDisplay()
+                                </span>
+                            }
+                        </div>
+                        
+                        @* Selection Indicator / Edit Button *@
+                        <div class="flex items-center gap-2">
+                            @if (isSelected && Config.AllowUpchargeEditing)
+                            {
+                                <button type="button"
+                                        class="p-1 rounded-full hover:bg-coral-200 transition-colors"
+                                        @onclick:stopPropagation="true"
+                                        @onclick="() => OpenUpchargeEditor(amenity)">
+                                    <svg class="w-4 h-4 text-coral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                </button>
+                            }
+                            @if (isSelected)
+                            {
+                                <svg class="w-5 h-5 text-coral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            @* Show More / Show Less *@
+            @if (_filteredAmenities.Count > Config.InitialVisibleCount)
+            {
+                <button type="button"
+                        class="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 
+                               bg-gray-50 hover:bg-gray-100 rounded-full transition-colors"
+                        @onclick="ToggleShowAll">
+                    @if (_showAll)
+                    {
+                        <span>Show less</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                        </svg>
+                    }
+                    else
+                    {
+                        <span>Show more</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    }
+                </button>
+            }
+        }
+    </div>
+
+    @* Footer Actions *@
+    @if (ShowActions && SelectedAmenities.Count > 0)
+    {
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <button type="button"
+                    class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 
+                           rounded-full hover:bg-gray-50 transition-colors"
+                    @onclick="ResetSelection">
+                Reset
+            </button>
+            
+                <button type="button"
+                        class="cursor-pointer px-6 py-2 text-sm font-medium text-white bg-gray-900 
+                               rounded-full hover:bg-gray-800 transition-colors flex items-center gap-2"
+                        @onclick="ConfirmSelection">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Confirm @SelectedAmenities.Count amenities</span>
+                </button>
+            
+        </div>
+    }
+</div>
+
+@* Upcharge Editor Modal *@
+@if (_showUpchargeEditor && _editingAmenity is not null)
+{
+    <UpchargeEditor Amenity="_editingAmenity"
+                    AvailableCurrencies="Config.AvailableCurrencies"
+                    OnSave="SaveUpcharge"
+                    OnCancel="CloseUpchargeEditor"
+                    OnRemove="RemoveAmenity" />
+}
+@if (_errors.Any())
+{
+    foreach (var error in _errors)
+    {
+        <p>@error</p>
+    }
+}
+@code {
+    
+    [Parameter,EditorRequired] public Guid TargetGuid { get; set; }
+    /// <summary>
+    /// Configuration for the selector behavior and appearance
+    /// </summary>
+    [Parameter] public AmenitySelectorConfig Config { get; set; } = new();
+    
+    /// <summary>
+    /// Currently selected amenities with their upcharge configurations
+    /// </summary>
+    [Parameter] public List<SelectedAmenityModel> SelectedAmenities { get; set; } = [];
+    [Parameter] public List<Guid> SelectedAmenitiesIds { get; set; } = [];
+    
+    /// <summary>
+    /// Callback when selected amenities change
+    /// </summary>
+    [Parameter] public EventCallback<List<SelectedAmenityModel>> SelectedAmenitiesChanged { get; set; }
+    
+    /// <summary>
+    /// Whether to show the footer action buttons
+    /// </summary>
+    [Parameter] public bool ShowActions { get; set; } = true;
+    
+    /// <summary>
+    /// Callback when confirm button is clicked
+    /// </summary>
+    [Parameter] public EventCallback<List<SelectedAmenityModel>> OnConfirm { get; set; }
+    
+    /// <summary>
+    /// Callback when an amenity is added (for immediate API calls)
+    /// </summary>
+    [Parameter] public EventCallback<SelectedAmenityModel> OnAmenityAdded { get; set; }
+    
+    /// <summary>
+    /// Callback when an amenity is removed (for immediate API calls)
+    /// </summary>
+    [Parameter] public EventCallback<Guid> OnAmenityRemoved { get; set; }
+    
+    /// <summary>
+    /// Callback when an amenity's upcharge is updated (for immediate API calls)
+    /// </summary>
+    [Parameter] public EventCallback<SelectedAmenityModel> OnUpchargeUpdated { get; set; }
+
+    [Inject] private IReferenceDataService ReferenceDataService { get; set; } = default!;
+
+    private List<AmenityResponse> _allAmenities = [];
+    private List<AmenityResponse> _filteredAmenities = [];
+    private List<string> _categories = [];
+    private string? _selectedCategory;
+    private bool _isLoading = true;
+    private List<string> _errors = [];
+    private bool _showAll = false;
+    private bool _showUpchargeEditor = false;
+    private SelectedAmenityModel? _editingAmenity;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAmenitiesAsync();
+        SelectedAmenities = _allAmenities.Where(a => SelectedAmenitiesIds.Contains(a.hotelAmenityId))
+            .Select(a => new SelectedAmenityModel
+            {
+                AmenityId = a.hotelAmenityId,
+                Code = a.Code,
+                Name = a.Name,
+                IconCode = a.IconCode,
+                Category = a.Category,
+                UpchargeType = UpchargeType.Flat,
+                UpchargeAmount = 0,
+                Currency = Config.DefaultCurrency
+            })
+            .ToList();
+    }
+
+    private async Task LoadAmenitiesAsync()
+    {
+        _isLoading = true;
+        _errors = [];
+        StateHasChanged();
+
+        var result = await GetAmenitiesAsync();
+        
+        result.Switch(
+            amenities =>
+            {
+                _allAmenities = amenities;
+                _categories = amenities
+                    .Where(a => !string.IsNullOrEmpty(a.Category))
+                    .Select(a => a.Category!)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToList();
+                ApplyFilter();
+            },
+            errors => _errors = errors.Select(e => e.Description).ToList()
+        );
+
+        _isLoading = false;
+    }
+
+    private async Task<ErrorOr<List<AmenityResponse>>> GetAmenitiesAsync()
+    {
+        // Boilerplate: Route to appropriate service based on context type
+        return Config.ContextType switch
+        {
+            AmenityContextType.Hotel => await ReferenceDataService.GetHotelAmenitiesAsync(),
+            AmenityContextType.Room => await GetRoomAmenitiesAsync(),
+            _ => await ReferenceDataService.GetHotelAmenitiesAsync()
+        };
+    }
+
+    /// <summary>
+    /// Boilerplate: Implement this method to fetch room amenities from your service
+    /// </summary>
+    private Task<ErrorOr<List<AmenityResponse>>> GetRoomAmenitiesAsync()
+    {
+        // TODO: Implement when IReferenceDataService has GetRoomAmenitiesAsync
+        // return ReferenceDataService.GetRoomAmenitiesAsync();
+        return Task.FromResult<ErrorOr<List<AmenityResponse>>>(
+            Error.NotFound("RoomAmenities.NotImplemented", "Room amenities endpoint not implemented"));
+    }
+
+    private void SelectCategory(string? category)
+    {
+        _selectedCategory = category;
+        _showAll = false;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _filteredAmenities = _selectedCategory is null
+            ? _allAmenities.OrderBy(a => a.Category).ThenBy(a => a.Name).ToList()
+            : _allAmenities
+                .Where(a => a.Category == _selectedCategory)
+                .OrderBy(a => a.Name)
+                .ToList();
+    }
+
+    private IEnumerable<AmenityResponse> GetVisibleAmenities()
+    {
+        return _showAll 
+            ? _filteredAmenities 
+            : _filteredAmenities.Take(Config.InitialVisibleCount);
+    }
+
+    private void ToggleShowAll() => _showAll = !_showAll;
+
+    private bool IsSelected(Guid amenityId) => 
+        SelectedAmenities.Any(a => a.AmenityId == amenityId);
+
+    private SelectedAmenityModel? GetSelectedAmenity(Guid amenityId) =>
+        SelectedAmenities.FirstOrDefault(a => a.AmenityId == amenityId);
+
+    private async Task ToggleAmenity(AmenityResponse amenity)
+    {
+        if (IsSelected(amenity.hotelAmenityId))
+        {
+            await RemoveAmenityInternal(amenity.hotelAmenityId);
+        }
+        else
+        {
+            if (Config.MaxSelections > 0 && SelectedAmenities.Count >= Config.MaxSelections)
+                return;
+        
+            await AddAmenityInternal(amenity);
+        }
+    }
+
+    private async Task AddAmenityInternal(AmenityResponse amenity)
+    {
+        var selectedAmenity = new SelectedAmenityModel
+        {
+            AmenityId = amenity.hotelAmenityId,
+            Code = amenity.Code,
+            Name = amenity.Name,
+            IconCode = amenity.IconCode,
+            Category = amenity.Category,
+            UpchargeType = UpchargeType.Flat,
+            UpchargeAmount = 0,
+            Currency = Config.DefaultCurrency
+        };
+
+        var newList = new List<SelectedAmenityModel>(SelectedAmenities) { selectedAmenity };
+        await UpdateSelection(newList);
+        
+        // Notify parent for immediate API call if needed
+        if (OnAmenityAdded.HasDelegate)
+        {
+            await OnAmenityAdded.InvokeAsync(selectedAmenity);
+        }
+    }
+
+    private async Task RemoveAmenityInternal(Guid amenityId)
+    {
+        var newList = SelectedAmenities.Where(a => a.AmenityId != amenityId).ToList();
+        await UpdateSelection(newList);
+        
+        // Notify parent for immediate API call if needed
+        if (OnAmenityRemoved.HasDelegate)
+        {
+            await OnAmenityRemoved.InvokeAsync(amenityId);
+        }
+    }
+
+    private void OpenUpchargeEditor(AmenityResponse amenity)
+    {
+        var existing = GetSelectedAmenity(amenity.hotelAmenityId);
+        _editingAmenity = existing ?? new SelectedAmenityModel
+        {
+            AmenityId = amenity.hotelAmenityId,
+            Code = amenity.Code,
+            Name = amenity.Name,
+            IconCode = amenity.IconCode,
+            Category = amenity.Category,
+            Currency = Config.DefaultCurrency
+        };
+        _showUpchargeEditor = true;
+    }
+
+    private void CloseUpchargeEditor()
+    {
+        _showUpchargeEditor = false;
+        _editingAmenity = null;
+    }
+
+    private async Task SaveUpcharge(SelectedAmenityModel updatedAmenity)
+    {
+        var newList = SelectedAmenities
+            .Select(a => a.AmenityId == updatedAmenity.AmenityId ? updatedAmenity : a)
+            .ToList();
+        
+        await UpdateSelection(newList);
+        
+        // Notify parent for immediate API call if needed
+        if (OnUpchargeUpdated.HasDelegate)
+        {
+            await OnUpchargeUpdated.InvokeAsync(updatedAmenity);
+        }
+        
+        CloseUpchargeEditor();
+    }
+
+    private async Task RemoveAmenity(Guid amenityId)
+    {
+        await RemoveAmenityInternal(amenityId);
+        CloseUpchargeEditor();
+    }
+
+    private async Task ResetSelection()
+    {
+        await UpdateSelection([]);
+    }
+
+    private async Task ConfirmSelection()
+    {
+        List<Guid> ids = SelectedAmenities.Select(a => a.AmenityId).ToList();
+        ErrorOr<List<Guid>> result = Config.ContextType switch
+        {
+            AmenityContextType.Hotel => await HotelApiService.UpdateHotelAmenities(ids , TargetGuid),
+            AmenityContextType.Room => await HotelApiService.UpdateRoomAmenities(ids,TargetGuid),
+            _ => await HotelApiService.UpdateHotelAmenities(ids,TargetGuid),
+        };
+        if (result.IsError)
+        {
+            _errors = result.Errors.Select(e => e.Description).ToList();
+        }
+        
+        if (OnConfirm.HasDelegate)
+        {
+            await OnConfirm.InvokeAsync(SelectedAmenities);
+        }
+        StateHasChanged();
+        
+    }
+
+    private async Task UpdateSelection(List<SelectedAmenityModel> newSelection)
+    {
+        SelectedAmenities = newSelection;
+        await SelectedAmenitiesChanged.InvokeAsync(newSelection);
+    }
+
+    // Styling helpers
+    private int GetCategoryCount(string? category) =>
+        category is null ? _allAmenities.Count : _allAmenities.Count(a => a.Category == category);
+
+    private int GetSelectedCountInCategory(string category) =>
+        SelectedAmenities.Count(s => 
+            _allAmenities.FirstOrDefault(a => a.hotelAmenityId == s.AmenityId)?.Category == category);
+
+    private string GetCategoryTabClass(string? category)
+    {
+        var isActive = _selectedCategory == category;
+        return $"flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-full transition-colors " +
+               (isActive 
+                   ? "bg-gray-900 text-white" 
+                   : "bg-gray-100 text-gray-600 hover:bg-gray-200");
+    }
+
+    private string GetCategoryBadgeClass(string? category) =>
+        _selectedCategory == category 
+            ? "bg-white/20 text-white" 
+            : "bg-gray-200 text-gray-600";
+
+    private string GetAmenityItemClass(bool isSelected) =>
+        $"flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 " +
+        (isSelected 
+            ? "bg-coral-100 border-2 border-coral-300 shadow-sm" 
+            : "bg-gray-50 border-2 border-transparent hover:bg-gray-100 hover:border-gray-200");
+
+    private string GetIconContainerClass(bool isSelected) =>
+        $"flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors " +
+        (isSelected ? "bg-coral-200" : "bg-white border border-gray-200");
+
+    private string GetIconClass(bool isSelected) =>
+        isSelected ? "text-coral-700" : "text-gray-500";
+
+    private string GetAmenityNameClass(bool isSelected) =>
+        $"text-sm font-medium truncate " +
+        (isSelected ? "text-coral-900" : "text-gray-700");
+}

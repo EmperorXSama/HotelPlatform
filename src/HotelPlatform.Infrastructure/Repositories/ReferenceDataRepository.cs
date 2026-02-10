@@ -26,6 +26,15 @@ public class ReferenceDataRepository : IReferenceDataRepository
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<HotelAmenityDefinition>> GetHotelAmenitiesByIdsAsync(
+        IEnumerable<HotelAmenityDefinitionId> ids,
+        CancellationToken cancellationToken = default)
+    {
+        var idValues = ids.Select(id => id.Value).ToList();
+        return await _dbContext.HotelAmenityDefinitions
+            .Where(a => idValues.Contains(a.Id))  
+            .ToListAsync(cancellationToken);
+    }
     public async Task<HotelAmenityDefinition?> GetHotelAmenityByCodeAsync(
         string code, 
         CancellationToken cancellationToken = default)

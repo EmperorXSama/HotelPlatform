@@ -1,0 +1,81 @@
+﻿@inject IJSRuntime JS
+
+@if (_shouldRender)
+{
+    <!-- Backdrop -->
+    <div class="fixed inset-0 z-40 bg-black transition-opacity duration-300 @(_isVisible ? "opacity-50" : "opacity-0")"
+         @onclick="Close">
+    </div>
+
+    <!-- Modal Panel — starts off-screen, anime.js moves it -->
+    <div id="@_modalId"
+         class="fixed inset-0 z-50 flex flex-col bg-white overflow-y-auto"
+         style="transform: translateY(100%)"
+         @onclick:stopPropagation="true">
+
+        <!-- Sticky Header -->
+        <div class="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900">@Title</h2>
+            <button @onclick="Close"
+                    class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div id="@_bodyId" class="p-6 w-full mx-auto">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public EventCallback OnClosed { get; set; }
+
+    private bool _shouldRender;
+    private bool _isVisible;
+    private readonly string _modalId = $"modal-{Guid.NewGuid():N}";
+    private readonly string _bodyId = $"modal-body-{Guid.NewGuid():N}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen && !_shouldRender)
+        {
+            _shouldRender = true;
+            StateHasChanged();
+
+            // Let the DOM render, then animate in
+            await Task.Delay(30);
+            _isVisible = true;
+
+            await JS.InvokeVoidAsync("modalAnimations.slideUp", _modalId);
+
+            // Bonus: stagger-animate sections inside the body
+            await JS.InvokeVoidAsync("modalAnimations.staggerChildren", _bodyId, ".animate-in");
+        }
+        else if (!IsOpen && _isVisible)
+        {
+            await AnimateClose();
+        }
+    }
+
+    private async Task Close()
+    {
+        await AnimateClose();
+        await IsOpenChanged.InvokeAsync(false);
+        await OnClosed.InvokeAsync();
+    }
+
+    private async Task AnimateClose()
+    {
+        _isVisible = false;
+        await JS.InvokeVoidAsync("modalAnimations.slideDown", _modalId);
+        _shouldRender = false;
+    }
+}

@@ -24,4 +24,8 @@
     <ProjectReference Include="..\HotelPlatform.ServiceDefaults\HotelPlatform.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Dto\ResponseObjects\" />
+  </ItemGroup>
+
 </Project>
